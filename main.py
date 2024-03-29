@@ -4,11 +4,20 @@ import sys
 import matplotlib.collections as mc
 import matplotlib.pylab as pl
 
-qtd_cidades = 5
-qtd_caixeiros = 2
-qtd_cidades_por_caixeiro = int(qtd_cidades / qtd_caixeiros)
-print("qtd cidade/caixeiro: ", qtd_cidades_por_caixeiro)
+qtd_cidades = 21
+qtd_caixeiros = 6
 
+def definir_qtd_cidades_por_caixeiro():
+    cidades_por_caixeiro = [0] * qtd_caixeiros
+    iCaixeiros = 0
+    for _ in range(qtd_cidades - 1): # a cidade inicial não entra no calculo de divisao de cidades por caixeiro, pois todos os caixeiros passam por ela
+        cidades_por_caixeiro[iCaixeiros] += 1
+        iCaixeiros += 1
+        if iCaixeiros >= qtd_caixeiros:
+            iCaixeiros = 0
+
+
+    return cidades_por_caixeiro
 
 def criar_coordenadas_e_calcular_distancias (qtd_cidades):
     coordenadas = []
@@ -120,13 +129,13 @@ def achar_caminhos (cidade_inicial, cidades_nao_visitadas, coordenadas, distanci
 
     distancia_total = 0
     caminhos = []
-    for _ in range(qtd_caixeiros):
+    for i in range(qtd_caixeiros):
         caminho = []
         caminho.append(cidade_inicial)
         cidade_mais_distante = calcular_cidade_mais_distante(coordenadas[cidade_inicial], coordenadas, cidades_nao_visitadas)
         caminho.append(cidades_nao_visitadas.pop(cidade_mais_distante))
 
-        for _ in range(qtd_cidades_por_caixeiro - 1): # -1 porque ele já passou pela cidade mais distante
+        for _ in range(qtd_cidades_por_caixeiro[i] - 1): # -1 porque ele já passou pela cidade mais distante
             centroide = calcular_centroide(caminho, coordenadas)
             cidade_mais_proxima = encontrar_cidade_mais_proxima(centroide, coordenadas, cidades_nao_visitadas) # encontrar_cidade_mais_proxima() retoan o número da cidade, nao o índice no vetor de cidades
             print("cidade mais proxima: ", cidades_nao_visitadas[cidade_mais_proxima])
@@ -159,9 +168,12 @@ print("xy cidade inicial: ", coordenada_cidade_inicial)
 cidades.pop(cidade_inicial)
 print("coordenadas sem cid inicial: ", coordenadas)
 print("indice cidade mais distante: ", calcular_cidade_mais_distante(coordenada_cidade_inicial, coordenadas, cidades))
+qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro
 achar_caminhos(cidade_inicial, cidades, coordenadas, distancias)
 
 dist = 0
 dist += calcular_distancia_caminho(distancias, [3, 0, 1])
 dist += calcular_distancia_caminho(distancias, [3, 2, 4])
 print("dist: ", dist)
+
+print("cid por cai: ", definir_qtd_cidades_por_caixeiro())
