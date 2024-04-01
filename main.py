@@ -4,8 +4,8 @@ import sys
 import matplotlib.collections as mc
 import matplotlib.pylab as pl
 
-qtd_cidades = 21
-qtd_caixeiros = 6
+qtd_cidades = 101
+qtd_caixeiros = 10
 
 def definir_qtd_cidades_por_caixeiro():
     cidades_por_caixeiro = [0] * qtd_caixeiros
@@ -138,42 +138,22 @@ def achar_caminhos (cidade_inicial, cidades_nao_visitadas, coordenadas, distanci
         for _ in range(qtd_cidades_por_caixeiro[i] - 1): # -1 porque ele já passou pela cidade mais distante
             centroide = calcular_centroide(caminho, coordenadas)
             cidade_mais_proxima = encontrar_cidade_mais_proxima(centroide, coordenadas, cidades_nao_visitadas) # encontrar_cidade_mais_proxima() retoan o número da cidade, nao o índice no vetor de cidades
-            print("cidade mais proxima: ", cidades_nao_visitadas[cidade_mais_proxima])
             if cidade_mais_proxima >= 0: # se cidade_mais_proxima retornar -1 significa que não há mais cidades_nao_visitadas
                 a = cidades_nao_visitadas.pop(cidade_mais_proxima)
                 caminho.append(a)
-                print("caminho: ", caminho)
-                print("sem 1")
 
         distancia_total += calcular_distancia_caminho(distancias, caminho)
         caminhos.extend(caminho)
 
-    caminhos.append(cidade_inicial)
-    print("caminhos: ", caminhos)
-    plot_tour(coordenadas, caminhos)
     print("distancia total: ", distancia_total)
-
+    caminhos.append(cidade_inicial)
+    plot_tour(coordenadas, caminhos)
 
 # testes dos métodos já codificados
 coordenadas, distancias = criar_coordenadas_e_calcular_distancias(qtd_cidades)
-print("coordenadas: ", coordenadas)
-print("distancias: ", distancias)
-
-cidades = list(range(qtd_cidades))
-print("cidades: ", cidades)
-cidade_inicial = 3 #random.choice(cidades)
-print("cidade inicial: ", cidade_inicial)
+cidades_nao_visitadas = list(range(qtd_cidades))
+cidade_inicial = random.choice(cidades_nao_visitadas)
+cidades_nao_visitadas.pop(cidade_inicial)
 coordenada_cidade_inicial = coordenadas[cidade_inicial - 1]
-print("xy cidade inicial: ", coordenada_cidade_inicial)
-cidades.pop(cidade_inicial)
-print("coordenadas sem cid inicial: ", coordenadas)
-print("indice cidade mais distante: ", calcular_cidade_mais_distante(coordenada_cidade_inicial, coordenadas, cidades))
-qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro
-achar_caminhos(cidade_inicial, cidades, coordenadas, distancias)
-
-dist = 0
-dist += calcular_distancia_caminho(distancias, [3, 0, 1])
-dist += calcular_distancia_caminho(distancias, [3, 2, 4])
-print("dist: ", dist)
-
-print("cid por cai: ", definir_qtd_cidades_por_caixeiro())
+qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
+achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
