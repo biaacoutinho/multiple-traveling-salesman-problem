@@ -33,13 +33,12 @@ def criar_coordenadas_e_calcular_distancias (qtd_cidades):
     return coordenadas, distancias
 
 
-def calcular_cidade_mais_distante (coordenada_cidade_inicial, coordenadas, cidades_nao_visitadas): # retorna o indice da cidade mais distante
+def calcular_cidade_mais_distante (cidade_inicial, distancias, cidades_nao_visitadas): # retorna o indice da cidade mais distante
     maior_distancia = -1
     cidade_mais_distante = -1
 
     for i in range(len(cidades_nao_visitadas)):
-        distancia = int(math.sqrt((coordenadas[cidades_nao_visitadas[i]][0] - coordenada_cidade_inicial[0])**2 + (coordenadas[cidades_nao_visitadas[i]][1] - coordenada_cidade_inicial[1])**2))
-
+        distancia = distancias[cidade_inicial][i]
         if distancia > maior_distancia:
             maior_distancia = distancia
             cidade_mais_distante = i
@@ -102,7 +101,7 @@ def generate_lines(coordinates, tour):
 
     return lines
 
-def plot_tour(coordinates, tour):
+def plot_tour(coordinates, tour, color):
     lc = mc.LineCollection(generate_lines(coordinates, tour), linewidths = 2)
 
     fig, ax = pl.subplots() # cria como se fosse uma tela em branco
@@ -119,7 +118,7 @@ def plot_tour(coordinates, tour):
         pl.text(i[0], i[1], str(j), color='red', fontsize=10)
         j += 1
     
-    pl.scatter(coordinatesX, coordinatesY)
+    pl.scatter(coordinatesX, coordinatesY, color=color)
     pl.title("Tour")
     pl.xlabel("X")
     pl.ylabel("Y")
@@ -132,28 +131,31 @@ def achar_caminhos (cidade_inicial, cidades_nao_visitadas, coordenadas, distanci
     for i in range(qtd_caixeiros):
         caminho = []
         caminho.append(cidade_inicial)
-        cidade_mais_distante = calcular_cidade_mais_distante(coordenadas[cidade_inicial], coordenadas, cidades_nao_visitadas)
+        cidade_mais_distante = calcular_cidade_mais_distante(cidade_inicial, distancias, cidades_nao_visitadas)
         caminho.append(cidades_nao_visitadas.pop(cidade_mais_distante))
 
         for _ in range(qtd_cidades_por_caixeiro[i] - 1): # -1 porque ele já passou pela cidade mais distante
             centroide = calcular_centroide(caminho, coordenadas)
-            cidade_mais_proxima = encontrar_cidade_mais_proxima(centroide, coordenadas, cidades_nao_visitadas) # encontrar_cidade_mais_proxima() retoan o número da cidade, nao o índice no vetor de cidades
-            if cidade_mais_proxima >= 0: # se cidade_mais_proxima retornar -1 significa que não há mais cidades_nao_visitadas
-                a = cidades_nao_visitadas.pop(cidade_mais_proxima)
-                caminho.append(a)
+            cidade_mais_proxima = encontrar_cidade_mais_proxima(centroide, coordenadas, cidades_nao_visitadas) # encontrar_cidade_mais_proxima() retorna o número da cidade, nao o índice no vetor de cidades
+            caminho.append(cidades_nao_visitadas.pop(cidade_mais_proxima))
 
         distancia_total += calcular_distancia_caminho(distancias, caminho)
-        caminhos.extend(caminho)
+        caminho.append(cidade_inicial)
+        caminhos.append(caminho)
 
     print("distancia total: ", distancia_total)
-    caminhos.append(cidade_inicial)
-    plot_tour(coordenadas, caminhos)
+    cores=['r', 'b', 'g', 'y', 'o', 'p']
+    iCores = 0
+    for i in range(qtd_caixeiros):
+        plot_tour(coordenadas, caminhos[i], cores[iCores])
+        iCores = iCores + 1
+        if iCores > 5:
+            iCores = 0
 
 # testes dos métodos já codificados
 coordenadas, distancias = criar_coordenadas_e_calcular_distancias(qtd_cidades)
 cidades_nao_visitadas = list(range(qtd_cidades))
 cidade_inicial = random.choice(cidades_nao_visitadas)
 cidades_nao_visitadas.pop(cidade_inicial)
-coordenada_cidade_inicial = coordenadas[cidade_inicial - 1]
 qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
 achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
