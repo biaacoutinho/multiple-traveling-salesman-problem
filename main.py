@@ -4,20 +4,21 @@ import sys
 import matplotlib.collections as mc
 import matplotlib.pylab as pl
 
-qtd_cidades = 101
+qtd_cidades = 100
 qtd_caixeiros = 10
 
 def definir_qtd_cidades_por_caixeiro():
-    cidades_por_caixeiro = [0] * qtd_caixeiros
-    iCaixeiros = 0
-    for _ in range(qtd_cidades - 1): # a cidade inicial não entra no calculo de divisao de cidades por caixeiro, pois todos os caixeiros passam por ela
-        cidades_por_caixeiro[iCaixeiros] += 1
-        iCaixeiros += 1
-        if iCaixeiros >= qtd_caixeiros:
-            iCaixeiros = 0
-
-
-    return cidades_por_caixeiro
+    if qtd_caixeiros > 0:
+        cidades_por_caixeiro = [0] * qtd_caixeiros
+        iCaixeiros = 0
+        for _ in range(qtd_cidades - 1): # a cidade inicial não entra no calculo de divisao de cidades por caixeiro, pois todos os caixeiros passam por ela
+            cidades_por_caixeiro[iCaixeiros] += 1
+            iCaixeiros += 1
+            if iCaixeiros >= qtd_caixeiros:
+                iCaixeiros = 0
+        return cidades_por_caixeiro
+    else:
+        return 0
 
 def criar_coordenadas_e_calcular_distancias (qtd_cidades):
     coordenadas = []
@@ -144,18 +145,22 @@ def achar_caminhos (cidade_inicial, cidades_nao_visitadas, coordenadas, distanci
         caminhos.append(caminho)
 
     print("distancia total: ", distancia_total)
+    
     cores=['r', 'b', 'g', 'y', 'o', 'p']
     iCores = 0
-    for i in range(qtd_caixeiros):
+    '''for i in range(qtd_caixeiros):
         plot_tour(coordenadas, caminhos[i], cores[iCores])
         iCores = iCores + 1
         if iCores > 5:
-            iCores = 0
+            iCores = 0'''
 
 # testes dos métodos já codificados
-coordenadas, distancias = criar_coordenadas_e_calcular_distancias(qtd_cidades)
-cidades_nao_visitadas = list(range(qtd_cidades))
-cidade_inicial = random.choice(cidades_nao_visitadas)
-cidades_nao_visitadas.pop(cidade_inicial)
-qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
-achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
+if qtd_cidades > 0:
+    coordenadas, distancias = criar_coordenadas_e_calcular_distancias(qtd_cidades)
+    cidades_nao_visitadas = list(range(qtd_cidades))
+    cidade_inicial = random.choice(cidades_nao_visitadas)
+    cidades_nao_visitadas.pop(cidade_inicial)
+    qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
+    achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
+else:
+    print("distancia total: ", 0)
