@@ -2,13 +2,30 @@ import random
 import math
 import sys
 import matplotlib.pyplot as plt
+from tkinter import filedialog
+import re
 
-qtd_cidades = 13
-qtd_caixeiros = 1
-
-coordenadas = [(500, 500), (708, 500), (707, 977), (43, 228), (140, 11), (899, 625), (389, 990), (205, 603), (878, 977), (24, 237), (218, 557), (362, 217), (504, 939)]
-
-
+def ler_arquivo_e_salvar_coordenadas():
+    coordenadas = []
+    nome_arquivo = filedialog.askopenfilename()
+    if nome_arquivo:
+        # verifica se o nome do arquivo condiz com o esperdo e utiliza esse metodo para encontrar o numero de caixeiros posteriormente
+        match = re.search(r'mTSP-n(\d+)-m(\d+)', nome_arquivo)
+        if match:
+            qtd_caixeiros = int(match.group(2))
+            arquivo = open(nome_arquivo, "r")
+            linhas_lidas = arquivo.readlines()
+            qtd_cidades = len(linhas_lidas)
+            for linha in linhas_lidas:
+                info = linha.split()
+                coordenadas.append((int(info[1]), int(info[2])))
+            return coordenadas, qtd_cidades, qtd_caixeiros
+        else:
+            print("Nome de arquivo inválido.")
+            return -1
+    else:
+        print("Nenhum arquivo selecionado.")
+        return -1
 
 def definir_qtd_cidades_por_caixeiro():
     if qtd_caixeiros > 0:
@@ -149,14 +166,19 @@ def achar_caminhos (cidade_inicial, cidades_nao_visitadas, coordenadas, distanci
     
     plot_tour(coordenadas, caminhos)
     
-
 # testes dos métodos já codificados
-if qtd_cidades > 0:
-    distancias = calcular_distancias(qtd_cidades, coordenadas)
-    cidades_nao_visitadas = list(range(qtd_cidades))
-    cidade_inicial = 0
-    cidades_nao_visitadas.pop(cidade_inicial)
-    qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
-    achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
+retorno = ler_arquivo_e_salvar_coordenadas()
+coordenadas, qtd_cidades, qtd_caixeiros =  retorno
+print("qtd cidades:", qtd_cidades)
+if coordenadas != -1:
+    if qtd_cidades > 0:
+        distancias = calcular_distancias(qtd_cidades, coordenadas)
+        cidades_nao_visitadas = list(range(qtd_cidades))
+        cidade_inicial = 0
+        cidades_nao_visitadas.pop(cidade_inicial)
+        qtd_cidades_por_caixeiro = definir_qtd_cidades_por_caixeiro()
+        achar_caminhos(cidade_inicial, cidades_nao_visitadas, coordenadas, distancias)
+    else:
+        print("distancia total: ", 0)
 else:
-    print("distancia total: ", 0)
+    print("Nenhum arquivo foi selecionado")
