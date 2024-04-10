@@ -1,3 +1,7 @@
+'''
+Código das linhas 17 a 19 inspirados em: "https://stackoverflow.com/questions/45162002/matching-filenames-with-regex-in-python"
+'''
+
 import random
 import math
 import sys
@@ -10,7 +14,7 @@ def read_file_and_read_coordinates():
     file_name = filedialog.askopenfilename()
     if file_name:
         # verifica se o nome do arquivo condiz com o esperdo e utiliza esse metodo para encontrar o numero de caixeiros posteriormente
-        match = re.search(r'mTSP-n(\d+)-m(\d+)', file_name)
+        match = re.search(r'mTSP-n(\d+)-m(\d+)', file_name) # primeiro parâmetro é o esperado e o segundo é o nome do arquivo selecionado pelo usuário
         if match:
             n_salesman = int(match.group(2))
             file = open(file_name, "r")
