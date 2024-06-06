@@ -17,9 +17,11 @@ def calculate_cities_per_salesman(n_salesman, n_cities):
 def split_tour(individual, cities_per_salesman): # individual é um vetor com as rotas de todos os caixeiros juntas
     total_tour = []
     for num_cities in cities_per_salesman:
-        tour = individual[:num_cities]
+        tour = [0]
+        tour.extend(individual[:num_cities - 1])
+        tour.append(0)
         total_tour.append(tour)
-        individual = individual[num_cities:]
+        individual = individual[num_cities - 1:]
 
     return total_tour
 
@@ -42,7 +44,7 @@ def calculate_distance_of_the_tour (distances, tour):
 
     return total_distance
 
-def calculate_distance_of_an_individual (distances, individual, cities_per_salesman):
+def calculate_fitness_of_an_individual (distances, individual, cities_per_salesman):
     total_distance = 0
 
     divided_into_tours = split_tour(individual, cities_per_salesman)
@@ -51,15 +53,6 @@ def calculate_distance_of_an_individual (distances, individual, cities_per_sales
         total_distance += calculate_distance_of_the_tour(distances, tour)
 
     return total_distance
-
-def calculate_fitness (population, distances):
-    population_costs = []
-    for individual in population:
-        distance = calculate_distance_of_an_individual(distances, individual)
-        fitness = 1 / distance   
-        population_costs.append(fitness) 
-
-    return population_costs
 
 def initialize_population(pop_size, n_cities):
     population = []
@@ -81,16 +74,17 @@ def binary_tournament_selection(population, pop_size, distances, cities_per_sale
     """
 
     selected_parents = []
-    number_of_selected_individuals = pop_size/4
+    number_of_selected_individuals = pop_size//4 # 25% da população será escolhida de forma aleatoria para ocorrer o torneio
 
-    for _ in range(pop_size/2):
+    # são selecionados o dobro de 80% do número de individuos --> dobro pois cada pai gera um filho e 80% da pop será formada por filhos
+    for _ in range(int(pop_size * 2 * 0.9)): 
         # 1.Select k individuals from the population and perform a tournament amongst them
         selected_individuals = random.sample(population, number_of_selected_individuals) # seleciona um determinado numero de individuos dentro da populacao
 
         # 2.Select the best individual from the k individuals --> necessario selecionar 2 individuos (os com menores distancias) para fazer o crossover
         distances_of_tours = []
         for individual in selected_individuals:
-            distances_of_tours.append(calculate_distance_of_an_individual(distances, individual, cities_per_salesman))
+            distances_of_tours.append(calculate_fitness_of_an_individual(distances, individual, cities_per_salesman))
         
         first_min_distance = min(distances_of_tours)
         index_of_first_min_distance = distances_of_tours.index(first_min_distance) # também representa o indice do individuo com a menor distancia (indice do vetor selected_individuals)
@@ -103,7 +97,7 @@ def binary_tournament_selection(population, pop_size, distances, cities_per_sale
         parent_1 = selected_individuals[index_of_first_min_distance]
         parent_2 = selected_individuals[index_of_second_min_distance]
 
-        selected_parents.append(parent_1, parent_2)
+        selected_parents.append((parent_1, parent_2))
 
     return selected_parents
 
@@ -129,34 +123,70 @@ def crossover (parents, n_cities):
 
     return offspring
 
+def mutation(individual, n_cities):
+    num_mutate_cities = (n_cities - 1) // 2 
+    start_of_mutation = random.randint(0, n_cities - 1 - num_mutate_cities) 
+    mutate_cities = individual[start_of_mutation : start_of_mutation + num_mutate_cities]
+    random.shuffle(mutate_cities)
+    individual[start_of_mutation : start_of_mutation + num_mutate_cities] = mutate_cities
 
-def create_new_generation(population, population_size, distances, cities_per_salesman):
-    new_population = []
+    return individual
+
+def order_by_fitness(population, distances, cities_per_salesman):
+    population.sort(key= lambda individual : calculate_fitness_of_an_individual(distances, individual, cities_per_salesman))
+    return population
+
+def select_elite(population, pop_size):
+    elite = []
+    for _ in range(pop_size * 0,1):
+        elite.append(population.pop())
+
+    return elite
+    
+
+def create_new_generation(population, population_size, distances, cities_per_salesman, n_cities):
+    ord_population = order_by_fitness(population, distances, cities_per_salesman)
+
+    # 20% da nova população será composta pela elite da geração atual
+    new_population = select_elite(ord_population, population_size)
+
     selected_parents = binary_tournament_selection(population, population_size, distances, cities_per_salesman)
 
-    # metade da populacao é selecionada --> como cada dois pais geram 1 filho, serão gerados 1/4 da nova geração
-
     for parents in selected_parents:
-        offspring = crossover(parents)
-        new_population.append(offspring)
+        offspring = crossover(parents, n_cities)
+        num = random.random()
+        if num >= 0.5:
+            new_population.append(mutation(offspring, n_cities))
+        else:
+            new_population.append(offspring)
+
+    return new_population
+
     '''
+        - 20% da população --> elite | 80% crossover --> aleatoriedade para haver mutação
         - fazer selecao (✓)
-        - aplicar crossing over selecionados nos selecionados para gerar os filhos (✓)
-        - aplicar mutacao nos selecionados
-        - substituir a populacao pelos pais selecionados e filhos mutados e recombinados
+        - aplicar crossing over nos selecionados para gerar os filhos (✓)
+        - aplicar mutacao aleatoria (✓)
+        - adicionar na população os filhos gerados e mutados (✓)
     '''
 
 n_salesman = 3
 n_cities = 32
 coordinates = [(500, 500), (826, 465), (359, 783), (563, 182), (547, 438), (569, 676), 
-               (989, 416), (648, 750), (694, 978), (493, 969), (175, 89), (104, 130), 
-               (257, 848), (791, 249), (952, 204), (34, 654), (89, 503), (548, 964), 
-               (492, 34), (749, 592), (536, 875), (373, 708), (385, 260), (560, 751), (304, 516), 
-               (741, 368), (59, 131), (154, 681), (425, 456), (885, 783), (30, 415), (61, 25)]
+            (989, 416), (648, 750), (694, 978), (493, 969), (175, 89), (104, 130), 
+            (257, 848), (791, 249), (952, 204), (34, 654), (89, 503), (548, 964), 
+            (492, 34), (749, 592), (536, 875), (373, 708), (385, 260), (560, 751), (304, 516), 
+            (741, 368), (59, 131), (154, 681), (425, 456), (885, 783), (30, 415), (61, 25)]
 
 distances = calculate_distances(n_cities, coordinates)
 cities_per_salesman = calculate_cities_per_salesman(n_salesman, n_cities)
-population_size = 50
+population_size = 100
 
-population = initialize_population(population_size, cities_per_salesman, n_cities)
-create_new_generation(population, population_size, distances, n_cities)
+population = initialize_population(population_size, n_cities)
+for _ in range(2000):
+    population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
+
+individual = order_by_fitness(population, distances, cities_per_salesman)[0]
+distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
+
+print(distance)
