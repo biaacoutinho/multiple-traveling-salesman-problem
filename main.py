@@ -2,7 +2,6 @@
 Código das linhas 17 a 19 inspirados em: "https://stackoverflow.com/questions/45162002/matching-filenames-with-regex-in-python"
 '''
 
-import random
 import math
 import sys
 import matplotlib.pyplot as plt
