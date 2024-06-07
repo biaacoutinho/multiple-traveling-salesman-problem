@@ -1,5 +1,6 @@
 import math
 import random
+from tqdm import tqdm
 
 def calculate_cities_per_salesman(n_salesman, n_cities):
     if n_salesman > 0:
@@ -138,7 +139,7 @@ def order_by_fitness(population, distances, cities_per_salesman):
 
 def select_elite(population, pop_size):
     elite = []
-    for _ in range(pop_size * 0,1):
+    for _ in range(int(pop_size * 0.1)):
         elite.append(population.pop())
 
     return elite
@@ -170,23 +171,38 @@ def create_new_generation(population, population_size, distances, cities_per_sal
         - adicionar na população os filhos gerados e mutados (✓)
     '''
 
-n_salesman = 3
-n_cities = 32
-coordinates = [(500, 500), (826, 465), (359, 783), (563, 182), (547, 438), (569, 676), 
-            (989, 416), (648, 750), (694, 978), (493, 969), (175, 89), (104, 130), 
-            (257, 848), (791, 249), (952, 204), (34, 654), (89, 503), (548, 964), 
-            (492, 34), (749, 592), (536, 875), (373, 708), (385, 260), (560, 751), (304, 516), 
-            (741, 368), (59, 131), (154, 681), (425, 456), (885, 783), (30, 415), (61, 25)]
+n_salesman = 5
+n_cities = 92
+coordinates = [
+    (500, 500), (354, 968), (582, 631), (411, 807), (153, 112), (505, 398),
+    (117, 730), (854, 568), (234, 931), (140, 725), (499, 319), (632, 956),
+    (220, 520), (86, 12), (689, 560), (580, 845), (984, 339), (653, 282),
+    (615, 278), (840, 501), (967, 289), (804, 22), (795, 741), (263, 847),
+    (601, 850), (150, 800), (390, 969), (967, 117), (279, 909), (711, 399),
+    (435, 707), (949, 661), (590, 776), (616, 836), (414, 335), (779, 251),
+    (34, 986), (567, 90), (420, 780), (811, 535), (868, 563), (487, 937),
+    (991, 195), (938, 91), (666, 333), (243, 527), (247, 770), (257, 731),
+    (159, 596), (23, 1), (225, 558), (112, 306), (965, 492), (655, 810),
+    (545, 178), (467, 143), (704, 298), (902, 210), (111, 303), (842, 978),
+    (252, 286), (481, 122), (42, 875), (868, 379), (624, 785), (19, 213),
+    (737, 684), (854, 931), (906, 247), (726, 15), (905, 787), (968, 995),
+    (293, 355), (592, 311), (94, 584), (337, 619), (902, 561), (82, 710),
+    (766, 539), (602, 185), (975, 768), (727, 782), (136, 946), (567, 892),
+    (616, 98), (536, 730), (311, 585), (164, 43), (713, 690), (445, 631),
+    (840, 935), (257, 761)
+]
+
 
 distances = calculate_distances(n_cities, coordinates)
 cities_per_salesman = calculate_cities_per_salesman(n_salesman, n_cities)
 population_size = 100
 
 population = initialize_population(population_size, n_cities)
-for _ in range(2000):
+for _ in tqdm(range(50000)):
     population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
 
 individual = order_by_fitness(population, distances, cities_per_salesman)[0]
 distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
 
 print(distance)
+ 
