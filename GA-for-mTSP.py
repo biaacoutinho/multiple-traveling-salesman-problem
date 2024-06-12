@@ -241,17 +241,17 @@ def plot_tour(coordinates, individuo, cities_per_salesman):
     plt.show()
 
 coordinates, n_cities, n_salesman = read_file_and_read_coordinates()
-
+print()
 distances = calculate_distances(n_cities, coordinates)
 cities_per_salesman = calculate_cities_per_salesman(n_salesman, n_cities)
 population_size = 100
 time_vector = []
-target = 6100
+target = 14000
 iterations = 100
-for i in range(iterations):
+for i in range(1, iterations + 1):
     start = time.time()
     population = initialize_population(population_size, n_cities)
-    for _ in tqdm(range(1000)):
+    for _ in tqdm(range(3000)):
         population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
         individual = order_by_fitness(population, distances, cities_per_salesman)[0]
         distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
@@ -273,7 +273,7 @@ for   i in range(iterations):
 
 plt.clf()
 plt.plot(time_vector, p, marker='o')
-plt.title("Tour")
+plt.title("TTT - Genetic Algorithm")
 plt.xlabel("Time to target")
 plt.ylabel("Probability")
 plt.show()
