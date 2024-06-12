@@ -4,6 +4,7 @@ from tqdm import tqdm
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 import re
+import time
 
 def read_file_and_read_coordinates():
     coordinates = []
@@ -173,7 +174,7 @@ def select_elite(population, pop_size):
 def create_new_generation(population, population_size, distances, cities_per_salesman, n_cities):
     ord_population = order_by_fitness(population, distances, cities_per_salesman)
 
-    # 20% da nova população será composta pela elite da geração atual
+    # 10% da nova população será composta pela elite da geração atual
     new_population = select_elite(ord_population, population_size)
 
     selected_parents = binary_tournament_selection(population, population_size, distances, cities_per_salesman)
@@ -244,13 +245,35 @@ coordinates, n_cities, n_salesman = read_file_and_read_coordinates()
 distances = calculate_distances(n_cities, coordinates)
 cities_per_salesman = calculate_cities_per_salesman(n_salesman, n_cities)
 population_size = 100
+time_vector = []
+target = 6100
+iterations = 100
+for i in range(iterations):
+    start = time.time()
+    population = initialize_population(population_size, n_cities)
+    for _ in tqdm(range(1000)):
+        population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
+        individual = order_by_fitness(population, distances, cities_per_salesman)[0]
+        distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
 
-population = initialize_population(population_size, n_cities)
-for _ in tqdm(range(25000)):
-    population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
+        if distance < target:
+            break
+    
+    end = time.time()
+    print(i, ": ", distance)
+    # plot_tour(coordinates, individual, cities_per_salesman)
 
-individual = order_by_fitness(population, distances, cities_per_salesman)[0]
-distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
 
-print(distance)
-plot_tour(coordinates, individual, cities_per_salesman)
+    time_vector.append(end - start)
+print(time_vector)
+time_vector.sort()
+p = []
+for   i in range(iterations):
+    p.append((i - 1/2)/iterations)
+
+plt.clf()
+plt.plot(time_vector, p, marker='o')
+plt.title("Tour")
+plt.xlabel("Time to target")
+plt.ylabel("Probability")
+plt.show()
