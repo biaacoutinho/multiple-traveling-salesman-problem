@@ -1,6 +1,31 @@
 import math
 import random
 from tqdm import tqdm
+from tkinter import filedialog
+import matplotlib.pyplot as plt
+import re
+
+def read_file_and_read_coordinates():
+    coordinates = []
+    file_name = filedialog.askopenfilename()
+    if file_name:
+        # verifica se o nome do arquivo condiz com o esperdo e utiliza esse metodo para encontrar o numero de caixeiros posteriormente
+        match = re.search(r'mTSP-n(\d+)-m(\d+)', file_name) # primeiro parâmetro é o esperado e o segundo é o nome do arquivo selecionado pelo usuário
+        if match:
+            n_salesman = int(match.group(2))
+            file = open(file_name, "r")
+            lines = file.readlines()
+            n_cities = len(lines)
+            for line in lines:
+                info = line.split()
+                coordinates.append((int(info[1]), int(info[2])))
+            return coordinates, n_cities, n_salesman
+        else:
+            print("Nome de arquivo inválido.")
+            return -1
+    else:
+        print("Nenhum arquivo selecionado.")
+        return -1
 
 def calculate_cities_per_salesman(n_salesman, n_cities):
     if n_salesman > 0:
@@ -75,7 +100,7 @@ def binary_tournament_selection(population, pop_size, distances, cities_per_sale
     """
 
     selected_parents = []
-    number_of_selected_individuals = pop_size//4 # 25% da população será escolhida de forma aleatoria para ocorrer o torneio
+    number_of_selected_individuals = pop_size//2 # 50% da população será escolhida de forma aleatoria para ocorrer o torneio
 
     # são selecionados o dobro de 80% do número de individuos --> dobro pois cada pai gera um filho e 80% da pop será formada por filhos
     for _ in range(int(pop_size * 2 * 0.9)): 
@@ -112,7 +137,7 @@ def crossover (parents, n_cities):
     offspring = [-1] * n_cities
 
     num_selected_cities = (n_cities - 1) // 2 # -1 pois a cidade 0 nao contra e dividido por 2 para que tenha aproximadamente metade de cada pai
-    start_of_selection = random.randint(0, n_cities - 1 - num_selected_cities) # a selecao de cidades pode ir atenum_selected_cities antes de terminar o vetor, senão serão selecionadas cidades fora do vetor, com índices superiores ao do último elemento
+    start_of_selection = random.randint(0, n_cities - 1 - num_selected_cities) # a selecao de cidades pode ir ate num_selected_cities antes de terminar o vetor, senão serão selecionadas cidades fora do vetor, com índices superiores ao do último elemento
     cities_of_first_parent = parents[0][start_of_selection : start_of_selection + num_selected_cities]
     offspring[start_of_selection : start_of_selection + num_selected_cities] = cities_of_first_parent
 
@@ -171,38 +196,61 @@ def create_new_generation(population, population_size, distances, cities_per_sal
         - adicionar na população os filhos gerados e mutados (✓)
     '''
 
-n_salesman = 5
-n_cities = 92
-coordinates = [
-    (500, 500), (354, 968), (582, 631), (411, 807), (153, 112), (505, 398),
-    (117, 730), (854, 568), (234, 931), (140, 725), (499, 319), (632, 956),
-    (220, 520), (86, 12), (689, 560), (580, 845), (984, 339), (653, 282),
-    (615, 278), (840, 501), (967, 289), (804, 22), (795, 741), (263, 847),
-    (601, 850), (150, 800), (390, 969), (967, 117), (279, 909), (711, 399),
-    (435, 707), (949, 661), (590, 776), (616, 836), (414, 335), (779, 251),
-    (34, 986), (567, 90), (420, 780), (811, 535), (868, 563), (487, 937),
-    (991, 195), (938, 91), (666, 333), (243, 527), (247, 770), (257, 731),
-    (159, 596), (23, 1), (225, 558), (112, 306), (965, 492), (655, 810),
-    (545, 178), (467, 143), (704, 298), (902, 210), (111, 303), (842, 978),
-    (252, 286), (481, 122), (42, 875), (868, 379), (624, 785), (19, 213),
-    (737, 684), (854, 931), (906, 247), (726, 15), (905, 787), (968, 995),
-    (293, 355), (592, 311), (94, 584), (337, 619), (902, 561), (82, 710),
-    (766, 539), (602, 185), (975, 768), (727, 782), (136, 946), (567, 892),
-    (616, 98), (536, 730), (311, 585), (164, 43), (713, 690), (445, 631),
-    (840, 935), (257, 761)
-]
+def generate_lines(coordinates, tour):
+    lines = list()
 
+    for j in range(len(tour) - 1):
+        lines.append([
+            coordinates[tour[j]],
+            coordinates[tour[j + 1]]
+        ])
+
+    lines.append([
+        coordinates[tour[-1]], 
+        coordinates[tour[0]]
+    ])
+
+    return lines
+
+def plot_tour(coordinates, individuo, cities_per_salesman):
+    plt.clf()
+    colors=['r', 'b', 'g', 'y', 'c', 'm']
+    iColors = 0
+
+    tours = split_tour(individual, cities_per_salesman)
+
+    for tour in tours:
+        coordinatesX = []
+        coordinatesY = []
+        for city in tour:
+            x = coordinates[city][0]
+            y = coordinates[city][1]
+            plt.text(x, y, city, color='red', fontsize=10)
+            coordinatesX.append(x)
+            coordinatesY.append(y)
+
+        plt.plot(coordinatesX, coordinatesY, colors[iColors], marker='o')
+        iColors += 1
+        if iColors > 5:
+            iColors = 0
+
+    plt.title("Tour")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.show()
+
+coordinates, n_cities, n_salesman = read_file_and_read_coordinates()
 
 distances = calculate_distances(n_cities, coordinates)
 cities_per_salesman = calculate_cities_per_salesman(n_salesman, n_cities)
 population_size = 100
 
 population = initialize_population(population_size, n_cities)
-for _ in tqdm(range(50000)):
+for _ in tqdm(range(25000)):
     population = create_new_generation(population, population_size, distances, cities_per_salesman, n_cities)
 
 individual = order_by_fitness(population, distances, cities_per_salesman)[0]
 distance = calculate_fitness_of_an_individual(distances, individual, cities_per_salesman)
 
 print(distance)
- 
+plot_tour(coordinates, individual, cities_per_salesman)
